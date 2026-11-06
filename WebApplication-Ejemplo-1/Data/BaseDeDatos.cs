@@ -7,7 +7,10 @@ namespace WebApplication_Ejemplo_1.Data
     {
        public BaseDeDatos(DbContextOptions<BaseDeDatos> options) : base(options)
         {
+
         }
-        public DbSet<Cancha> Canchas { get; set; }
+       public DbSet<Cancha> canchas { get; set; }
+       public DbSet<Cliente> clientes { get; set; }
+       public DbSet<reseva> resevas { get; set; }
     }
 }
