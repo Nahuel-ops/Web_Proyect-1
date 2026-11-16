@@ -1,8 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using WebApplication_Ejemplo_1.Data;
-using WebApplication_Ejemplo_1.Models;
+﻿using Microsoft.AspNetCore.Mvc;
+using WebApplication_Ejemplo_1.DTOs;
+using WebApplication_Ejemplo_1.Interfaces;
 
 namespace WebApplication_Ejemplo_1.Controllers
 {
@@ -10,45 +8,36 @@ namespace WebApplication_Ejemplo_1.Controllers
     [ApiController]
     public class ClienteController : ControllerBase
     {
+        // Dando el control a services mediante la interfaz
+        private readonly ICliente _clienteService;
 
-        private readonly BaseDeDatos _context;
-
-        public ClienteController(BaseDeDatos context)
+        public ClienteController(ICliente clienteService)
         {
-            _context = context;
+            _clienteService = clienteService;
         }
 
-        // GET: api/cliente (Listar Clientes)
-        [HttpGet(Name = "listarClientes")]
-        public async Task<IActionResult> Get()
+        [HttpGet]
+        public IActionResult Get()
         {
-            var clientes = await _context.clientes.ToListAsync();
-            return Ok(clientes);
+            return Ok(_clienteService.ObtenerTodos());
         }
 
-        // POST: api/cliente (Registrar Cliente con validación de nombre repetido)
-        [HttpPost(Name = "guardarCliente")]
-        public async Task<ActionResult<Cliente>> Post(Cliente cliente)
+        [HttpGet("{id}")]
+        public IActionResult Get(Guid id)
         {
-            // Verificar si ya existe un cliente con el mismo nombre
-            var existe = await _context.clientes
-                .AnyAsync(c => c.Nombre == cliente.Nombre);
-
-            if (existe)
+            var cliente = _clienteService.ObtenerPorId(id);
+            if (cliente == null)
             {
-                return BadRequest("Ya existe un cliente con ese nombre.");
+                return NotFound("El Id no se encuentra en cliente");
             }
+            return Ok(cliente);
+        }
 
-            await _context.clientes.AddAsync(cliente);
-            await _context.SaveChangesAsync();
-
-            return Ok("Cliente registrado correctamente");
+        [HttpPost]
+        public IActionResult Post(ClienteDTOs clienteDto)
+        {
+            _clienteService.Crear(clienteDto);
+            return Ok("Datos registrados correctamente");
         }
     }
-
-
-
-
-
 }
-

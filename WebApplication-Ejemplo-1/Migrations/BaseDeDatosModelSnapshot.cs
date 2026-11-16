@@ -24,11 +24,9 @@ namespace WebApplication_Ejemplo_1.Migrations
 
             modelBuilder.Entity("WebApplication_Ejemplo_1.Models.Cancha", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Descripcion")
                         .IsRequired()
@@ -45,11 +43,9 @@ namespace WebApplication_Ejemplo_1.Migrations
 
             modelBuilder.Entity("WebApplication_Ejemplo_1.Models.Cliente", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
@@ -57,7 +53,6 @@ namespace WebApplication_Ejemplo_1.Migrations
                         .HasColumnType("nvarchar(10)");
 
                     b.Property<int>("Telefono")
-                        .HasMaxLength(99999999)
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -67,22 +62,22 @@ namespace WebApplication_Ejemplo_1.Migrations
 
             modelBuilder.Entity("WebApplication_Ejemplo_1.Models.reseva", b =>
                 {
-                    b.Property<int>("id")
+                    b.Property<Guid>("id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id"));
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("Fecha")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("IdCancha")
-                        .HasColumnType("int");
+                    b.Property<Guid>("IdCancha")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("IdCliente")
-                        .HasColumnType("int");
+                    b.Property<Guid>("IdCliente")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("id");
+
+                    b.HasIndex("IdCancha");
 
                     b.HasIndex("IdCliente");
 
@@ -91,11 +86,19 @@ namespace WebApplication_Ejemplo_1.Migrations
 
             modelBuilder.Entity("WebApplication_Ejemplo_1.Models.reseva", b =>
                 {
+                    b.HasOne("WebApplication_Ejemplo_1.Models.Cancha", "Cancha")
+                        .WithMany()
+                        .HasForeignKey("IdCancha")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("WebApplication_Ejemplo_1.Models.Cliente", "Cliente")
                         .WithMany()
                         .HasForeignKey("IdCliente")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Cancha");
 
                     b.Navigation("Cliente");
                 });

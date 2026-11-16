@@ -8,16 +8,24 @@ namespace WebApplication_Ejemplo_1.Models
     {   
 
         [Key]
-        public int id { get; set; }
+        public Guid id { get; set; }
+
         [Required (ErrorMessage = "la fecha es requerida")]
         [DataType(DataType.Date)]
-
         public DateTime Fecha { get; set; } = DateTime.Now;
 
-        public int IdCancha { get; set; }
+        //es del anterior
+        //public int IdCancha { get; set; }
+        //ahora o modificamos
+        public Guid IdCancha { get; set; }
         [ForeignKey(nameof(IdCancha))]
+        //agregado por la IA
+        public virtual Cancha? Cancha { get; set; } = null;
 
-        public int IdCliente { get; set; }
+        //es del anterior
+        //public int IdCliente { get; set; }
+        //ahora lo modificamos
+        public Guid IdCliente { get; set; }
         [ForeignKey(nameof(IdCliente))] 
         public virtual Cliente? Cliente { get; set; } = null;
 

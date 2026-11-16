@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApplication_Ejemplo_1.Data;
+using WebApplication_Ejemplo_1.DTOs;
+using WebApplication_Ejemplo_1.Interfaces;
 using WebApplication_Ejemplo_1.Models;
 
 namespace WebApplication_Ejemplo_1.Controllers
@@ -10,39 +12,41 @@ namespace WebApplication_Ejemplo_1.Controllers
     [ApiController]
     
     public class CanchaController : ControllerBase
-    {
-         private readonly BaseDeDatos _context;
-         public CanchaController(BaseDeDatos context)
-         {
-                _context = context;
-         }
-        [HttpGet(Name = "Listar")]
-        public async Task<IActionResult> Get()
-        {
-            var cancha = await _context.canchas.ToListAsync();
-            return Ok(cancha);
+    {   
+        //El anterior codigo lo borramos
+        //Desde esta parte estamos dando el contro a services y quitando el trabajo a...
+        private readonly ICancha _canchaService;
+
+        public CanchaController(ICancha canchaService) 
+        { 
+            _canchaService = canchaService;
         }
-
-
-        //
-        [HttpPost(Name = "guardar")]
-        public async Task<ActionResult<Cancha>> Post(Cancha cancha)
+        [HttpGet]
+        public IActionResult Get()
         {
-            var existe = await _context.canchas
-                .AnyAsync(c => c.Descripcion == cancha.Descripcion);
-
-            if (existe)
+            return Ok(_canchaService.ObtenerTodos());
+        }
+        [HttpGet("{id}")]
+        public IActionResult Get(Guid id)
+        {
+            var cancha = _canchaService.ObtenerPorId(id);
+            if (cancha == null)
             {
-                return BadRequest("Ya existe una cancha con esa descripción.");
+                return NotFound("el Id no se encuentra en cancha");
             }
-
-            await _context.canchas.AddAsync(cancha);
-            await _context.SaveChangesAsync();
-
             return Ok(cancha);
         }
+        [HttpPost]
+        public IActionResult Post(CanchaDTOs canchaDto)
+        {
+            _canchaService.Crear(canchaDto);
+            return Ok("Datos resgistrados correctamente");
+        }
+
+
+
 
 
     }
-    
+
 }
