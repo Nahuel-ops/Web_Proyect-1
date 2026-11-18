@@ -1,8 +1,8 @@
-ï»¿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApplication_Ejemplo_1.Data;
-using WebApplication_Ejemplo_1.DTOs;
+using Contrato;
 using WebApplication_Ejemplo_1.Interfaces;
 using WebApplication_Ejemplo_1.Models;
 
@@ -44,6 +44,33 @@ namespace WebApplication_Ejemplo_1.Controllers
         }
 
 
+        // SUBIR IMAGEN AL SERVIDOR: POST api/Cancha/subir-imagen
+        [HttpPost("subir-imagen")]
+        public async Task<IActionResult> SubirImagen(IFormFile archivo)
+        {
+            if (archivo == null || archivo.Length == 0)
+            {
+                return BadRequest("No se seleccionó ningún archivo.");
+            }
+
+            string carpetaDestino = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "imagenes");
+            if (!Directory.Exists(carpetaDestino))
+            {
+                Directory.CreateDirectory(carpetaDestino);
+            }
+
+            string nombreUnico = $"{Guid.NewGuid()}_{Path.GetFileName(archivo.FileName)}";
+            string rutaCompleta = Path.Combine(carpetaDestino, nombreUnico);
+
+            using (var stream = new FileStream(rutaCompleta, FileMode.Create))
+            {
+                await archivo.CopyToAsync(stream);
+            }
+
+            // Devuelve la URL pública donde quedó guardada la imagen en el servidor
+            string urlPublica = $"{Request.Scheme}://{Request.Host}/imagenes/{nombreUnico}";
+            return Ok(new { url = urlPublica });
+        }
 
 
 

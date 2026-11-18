@@ -30,11 +30,17 @@ namespace WebApplication_Ejemplo_1.Migrations
 
                     b.Property<string>("Descripcion")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
 
                     b.Property<string>("Direccion")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Imagen")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
 
                     b.HasKey("Id");
 
@@ -49,8 +55,7 @@ namespace WebApplication_Ejemplo_1.Migrations
 
                     b.Property<string>("Nombre")
                         .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Telefono")
                         .HasColumnType("int");
@@ -87,7 +92,7 @@ namespace WebApplication_Ejemplo_1.Migrations
             modelBuilder.Entity("WebApplication_Ejemplo_1.Models.reseva", b =>
                 {
                     b.HasOne("WebApplication_Ejemplo_1.Models.Cancha", "Cancha")
-                        .WithMany()
+                        .WithMany("Reservas")
                         .HasForeignKey("IdCancha")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -101,6 +106,11 @@ namespace WebApplication_Ejemplo_1.Migrations
                     b.Navigation("Cancha");
 
                     b.Navigation("Cliente");
+                });
+
+            modelBuilder.Entity("WebApplication_Ejemplo_1.Models.Cancha", b =>
+                {
+                    b.Navigation("Reservas");
                 });
 #pragma warning restore 612, 618
         }

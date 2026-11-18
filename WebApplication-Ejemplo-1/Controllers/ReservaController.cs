@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using WebApplication_Ejemplo_1.DTOs;
+using Contrato;
 using WebApplication_Ejemplo_1.Interfaces;
 
 namespace WebApplication_Ejemplo_1.Controllers

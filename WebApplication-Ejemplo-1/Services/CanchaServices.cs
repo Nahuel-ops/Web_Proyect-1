@@ -1,6 +1,6 @@
-﻿//using Microsoft.EntityFrameworkCore;
+//using Microsoft.EntityFrameworkCore;
 using WebApplication_Ejemplo_1.Data;
-using WebApplication_Ejemplo_1.DTOs;
+using Contrato;
 using WebApplication_Ejemplo_1.Interfaces;
 using WebApplication_Ejemplo_1.Models;
 
@@ -33,6 +33,7 @@ namespace WebApplication_Ejemplo_1.Services
             {
                 Descripcion = canchaDTOs.Descripcion,
                 Direccion = canchaDTOs.Direccion,
+                Imagen = canchaDTOs.Imagen
             };
             _contex.canchas.Add(cancha);
             _contex.SaveChanges();

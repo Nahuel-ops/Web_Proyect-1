@@ -1,5 +1,5 @@
 using WebApplication_Ejemplo_1.Data;
-using WebApplication_Ejemplo_1.DTOs;
+using Contrato;
 using WebApplication_Ejemplo_1.Interfaces;
 using WebApplication_Ejemplo_1.Models;
 

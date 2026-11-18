@@ -1,12 +1,8 @@
-
 using Microsoft.EntityFrameworkCore;
 using WebApplication_Ejemplo_1.Data;
 using WebApplication_Ejemplo_1.Interfaces;
 using WebApplication_Ejemplo_1.Services;
-//
 using WebApplication_Ejemplo_1.Factories;
-
-
 
 namespace WebApplication_Ejemplo_1
 {
@@ -16,53 +12,55 @@ namespace WebApplication_Ejemplo_1
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
-            //esta linea es para obtener la cadena de conexion del appsettings.json
+            // Habilitar CORS para que Blazor / Razor pueda consumir la API
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("PermitirBlazor", policy =>
+                {
+                    policy.AllowAnyOrigin()
+                          .AllowAnyMethod()
+                          .AllowAnyHeader();
+                });
+            });
+
+            // Cadena de conexión del appsettings.json
             var db = builder.Configuration.GetConnectionString("ConexionDB");
 
-            //esta linea es para registrar el contexto de la base de datos en el contenedor de servicios
+            // Registrar el contexto de la base de datos en el contenedor de servicios
             builder.Services.AddDbContext<BaseDeDatos>(options => options.UseSqlServer(db));
-
-
 
             builder.Services.AddControllers();
 
-            //agregamos cambio en fecha 11 de noviembre.
+            // Inyección de dependencias
             builder.Services.AddScoped<ICancha, CanchaServices>();
-
-            // este es de cliente:
             builder.Services.AddScoped<ICliente, ClienteServices>();
-
-            // este es de reservas:
             builder.Services.AddScoped<IReserva, ReservaServices>();
 
-
-
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
             var app = builder.Build();
 
-            // Sembrar datos iniciales (Factories) al arrancar si las tablas están vacías
+            // >>> AQUÍ VA EL BLOQUE DE LAS DOS OPCIONES DE SEMBRADO <<<
             using (var scope = app.Services.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<BaseDeDatos>();
 
+                // OPCIÓN 1: Fábrica estática (CanchaFactories)
+                /*
                 if (!context.canchas.Any())
                 {
                     context.canchas.AddRange(CanchaFactories.CrearCanchas());
                     context.SaveChanges();
                 }
-                /*
-                if (!context.clientes.Any())
+                */
+
+                // OPCIÓN 2: Fábrica personalizada con Bogus (CanchasFactories)
+                if (!context.canchas.Any())
                 {
-                    context.clientes.AddRange(ClienteFactories.CrearClientes());
-                    context.SaveChanges();
-                }*/
+                    CanchasFactories.Seed(context);
+                }
             }
-
-
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
@@ -73,8 +71,12 @@ namespace WebApplication_Ejemplo_1
 
             app.UseHttpsRedirection();
 
-            app.UseAuthorization();
+            //activamos 
+            app.UseStaticFiles();
 
+            app.UseCors("PermitirBlazor");
+
+            app.UseAuthorization();
 
             app.MapControllers();
 

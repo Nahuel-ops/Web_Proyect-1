@@ -1,0 +1,256 @@
+@page
+@model WebRazorCanchas.Pages.Canchas.IndexModel
+@{
+    ViewData["Title"] = "Canchas";
+}
+
+<!-- Banner Hero en Color Rojo -->
+<div class="hero-canchas p-4 p-md-5 mb-4 shadow-sm d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+    <div>
+        <span class="badge bg-white text-danger rounded-pill px-3 py-1 mb-2 fw-semibold">
+            <i class="bi bi-trophy-fill text-danger me-1"></i> ArenaSport · Edición Roja
+        </span>
+        <h1 class="fw-bold mb-1">Gestión de Canchas</h1>
+        <p class="mb-0 text-white-50">Registra y visualiza los espacios deportivos con galería interactiva.</p>
+    </div>
+    <div class="bg-white bg-opacity-10 border border-white border-opacity-25 rounded-4 px-4 py-3 text-center">
+        <span class="d-block small text-white-50 text-uppercase">Total Registradas</span>
+        <span class="fs-2 fw-bold">@Model.TotalRegistros</span>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Formulario minimalista con vista previa de imagen -->
+    <div class="col-lg-4">
+        <div class="card card-minimal p-4">
+            <h5 class="fw-bold mb-3 d-flex align-items-center gap-2 text-dark">
+                <i class="bi bi-plus-circle-fill text-danger"></i>
+                <span>Registrar Cancha</span>
+            </h5>
+
+            <form method="post" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold text-secondary">Descripción</label>
+                    <input asp-for="NuevaCancha.Descripcion" class="form-control input-minimal" placeholder="Ej. Cancha Sintética Roja" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold text-secondary">Dirección</label>
+                    <input asp-for="NuevaCancha.Direccion" class="form-control input-minimal" placeholder="Ej. Av. Las Américas #450" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold text-secondary">Imagen de la Cancha</label>
+                    <input type="file" asp-for="ArchivoImagen" id="inputImagen" class="form-control input-minimal" accept="image/*" onchange="previsualizarImagen(event)" />
+                </div>
+
+                <!-- Contenedor de vista previa antes de guardar -->
+                <div id="contenedorPreview" class="mb-3 d-none text-center p-2 rounded-3 bg-light border border-danger-subtle">
+                    <span class="d-block small text-muted mb-2">Vista previa seleccionada:</span>
+                    <img id="imagenPreview" src="#" alt="Vista previa" class="img-fluid rounded-3 shadow-sm" style="max-height: 150px; object-fit: cover;" />
+                </div>
+
+                <button type="submit" class="btn btn-danger w-100 py-2 rounded-3 fw-semibold shadow-sm mt-1">
+                    <i class="bi bi-cloud-arrow-up-fill me-1"></i> Guardar Cancha
+                </button>
+            </form>
+
+            @if (!string.IsNullOrEmpty(Model.Mensaje))
+            {
+                <div class="alert alert-danger border-0 rounded-3 small mt-3 mb-0">
+                    @Model.Mensaje
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Listado minimalista con Galería Lightbox y Paginación -->
+    <div class="col-lg-8">
+        <div class="card card-minimal p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0 d-flex align-items-center gap-2 text-dark">
+                    <i class="bi bi-images text-danger"></i>
+                    <span>Canchas Disponibles</span>
+                </h5>
+                <span class="small text-muted">Página @Model.PaginaActual de @Model.TotalPaginas</span>
+            </div>
+
+            @if (!Model.ListaCanchas.Any())
+            {
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-inbox fs-1 d-block mb-2 text-danger"></i>
+                    <p class="mb-0">Aún no hay canchas registradas.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="text-secondary small text-uppercase border-bottom">
+                            <tr>
+                                <th class="border-0 pb-3">Imagen</th>
+                                <th class="border-0 pb-3">Descripción</th>
+                                <th class="border-0 pb-3">Dirección</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var c in Model.ListaCanchas)
+                            {
+                                <tr>
+                                    <td class="py-3">
+                                        @if (!string.IsNullOrEmpty(c.Imagen))
+                                        {
+                                            <img src="@c.Imagen"
+                                                 alt="@c.Descripcion"
+                                                 data-title="@c.Descripcion"
+                                                 data-description="@c.Direccion"
+                                                 class="img-miniatura shadow-sm galeria-item"
+                                                 onclick="abrirVisor(this)" />
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger-subtle text-danger rounded-3 px-2 py-2">
+                                                <i class="bi bi-image"></i> Sin foto
+                                            </span>
+                                        }
+                                    </td>
+                                    <td class="fw-semibold text-dark py-3">
+                                        <span class="badge bg-danger-subtle text-danger rounded-circle p-2 me-2">
+                                            <i class="bi bi-geo-alt-fill"></i>
+                                        </span>
+                                        @c.Descripcion
+                                    </td>
+                                    <td class="text-muted py-3">@c.Direccion</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Controles de Paginación en Color Rojo -->
+                @if (Model.TotalPaginas > 1)
+                {
+                    <nav aria-label="Paginación de canchas" class="mt-4">
+                        <ul class="pagination pagination-sm justify-content-end mb-0 gap-1">
+                            <li class="page-item @(Model.PaginaActual == 1 ? "disabled" : "")">
+                                <a class="page-link rounded-3 text-danger border-danger-subtle" asp-page="./Index" asp-route-pagina="@(Model.PaginaActual - 1)">
+                                    <i class="bi bi-chevron-left"></i> Anterior
+                                </a>
+                            </li>
+
+                            @for (int i = 1; i <= Model.TotalPaginas; i++)
+                            {
+                                <li class="page-item @(i == Model.PaginaActual ? "active" : "")">
+                                    <a class="page-link rounded-3 @(i == Model.PaginaActual ? "bg-danger border-danger text-white" : "text-danger border-danger-subtle")"
+                                       asp-page="./Index" asp-route-pagina="@i">@i</a>
+                                </li>
+                            }
+
+                            <li class="page-item @(Model.PaginaActual == Model.TotalPaginas ? "disabled" : "")">
+                                <a class="page-link rounded-3 text-danger border-danger-subtle" asp-page="./Index" asp-route-pagina="@(Model.PaginaActual + 1)">
+                                    Siguiente <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Visor Lightbox con X arriba a la derecha y flechas < y > a los lados -->
+<div id="visorLightbox" class="d-none position-fixed top-0 start-0 w-100 h-100 align-items-center justify-content-center"
+     style="background-color: rgba(15, 15, 15, 0.92); z-index: 9999;">
+
+    <button type="button" onclick="cerrarVisor()" aria-label="Cerrar"
+            class="btn btn-danger rounded-circle position-fixed top-0 end-0 m-4 d-flex align-items-center justify-content-center shadow"
+            style="width: 46px; height: 46px; font-size: 1.3rem; z-index: 10001;">
+        &times;
+    </button>
+
+    <button type="button" onclick="cambiarImagen(-1)" aria-label="Anterior"
+            class="btn btn-outline-light rounded-circle position-fixed start-0 ms-3 ms-md-5 d-flex align-items-center justify-content-center shadow"
+            style="width: 50px; height: 50px; font-size: 1.5rem; z-index: 10001;">
+        &lt;
+    </button>
+
+    <div class="text-center px-5" style="max-width: 85vw;">
+        <img id="visorImg" src="" alt="Imagen ampliada" class="img-fluid rounded-4 shadow-lg" style="max-height: 78vh; object-fit: contain;" />
+        <div class="mt-3 text-white">
+            <h5 id="visorTitulo" class="fw-bold mb-1"></h5>
+            <p id="visorDescripcion" class="text-white-50 small mb-0"></p>
+        </div>
+    </div>
+
+    <button type="button" onclick="cambiarImagen(1)" aria-label="Siguiente"
+            class="btn btn-outline-light rounded-circle position-fixed end-0 me-3 me-md-5 d-flex align-items-center justify-content-center shadow" style="width: 50px; height: 50px; font-size: 1.5rem; z-index: 10001;">
+        &gt;
+     </button>
+    </div>
+    @section Scripts {
+    <script>
+        let imagenesGaleria = [];
+        let indiceActual = 0;
+
+        document.addEventListener("DOMContentLoaded", function () {
+            imagenesGaleria = Array.from(document.querySelectorAll('.galeria-item'));
+        });
+
+        function abrirVisor(elementoImg) {
+            imagenesGaleria = Array.from(document.querySelectorAll('.galeria-item'));
+            indiceActual = imagenesGaleria.indexOf(elementoImg);
+            mostrarImagenActual();
+
+            const visor = document.getElementById('visorLightbox');
+            visor.classList.remove('d-none');
+            visor.classList.add('d-flex');
+        }
+
+        function cerrarVisor() {
+            const visor = document.getElementById('visorLightbox');
+            visor.classList.remove('d-flex');
+            visor.classList.add('d-none');
+        }
+
+        function cambiarImagen(direccion) {
+            if (imagenesGaleria.length === 0) return;
+            indiceActual = (indiceActual + direccion + imagenesGaleria.length) % imagenesGaleria.length;
+            mostrarImagenActual();
+        }
+        function mostrarImagenActual() {
+            const img = imagenesGaleria[indiceActual];
+            document.getElementById('visorImg').src = img.src;
+            document.getElementById('visorTitulo').textContent = img.getAttribute('data-title') || '';
+            document.getElementById('visorDescripcion').textContent = img.getAttribute('data-description') || '';
+        }
+
+        document.addEventListener('keydown', function (e) {
+            const visor = document.getElementById('visorLightbox');
+            if (!visor.classList.contains('d-none')) {
+                if (e.key === 'Escape') cerrarVisor();
+                if (e.key === 'ArrowLeft') cambiarImagen(-1);
+                if (e.key === 'ArrowRight') cambiarImagen(1);
+            }
+        });
+
+        function previsualizarImagen(event) {
+            const input = event.target;
+            const contenedor = document.getElementById('contenedorPreview');
+            const preview = document.getElementById('imagenPreview');
+
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    preview.src = e.target.result;
+                    contenedor.classList.remove('d-none');
+                };
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                preview.src = '#';
+                contenedor.classList.add('d-none');
+            }
+        }
+    </script>
+}
+

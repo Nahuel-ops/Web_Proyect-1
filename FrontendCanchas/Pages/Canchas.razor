@@ -1,0 +1,113 @@
+@page "/canchas"
+@inject HttpClient Http
+
+<h3>Gestión de Canchas</h3>
+
+<div class="card p-3 mb-4">
+    <h5>Registrar Nueva Cancha</h5>
+    <EditForm Model="@nuevaCancha" OnValidSubmit="RegistrarCancha">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="row">
+            <div class="col-md-6 mb-2">
+                <label class="form-label">Descripción</label>
+                <InputText class="form-control" @bind-Value="nuevaCancha.Descripcion" />
+            </div>
+            <div class="col-md-6 mb-2">
+                <label class="form-label">Dirección</label>
+                <InputText class="form-control" @bind-Value="nuevaCancha.Direccion" />
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary mt-2">Guardar Cancha</button>
+    </EditForm>
+
+    @if (!string.IsNullOrEmpty(mensaje))
+    {
+        <div class="alert alert-info mt-3">@mensaje</div>
+    }
+</div>
+
+<h5>Listado de Canchas</h5>
+
+@if (listaCanchas == null)
+{
+    <p><em>Cargando canchas...</em></p>
+}
+else if (!listaCanchas.Any())
+{
+    <p>No hay canchas registradas.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Descripción</th>
+                <th>Dirección</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var c in listaCanchas)
+            {
+                <tr>
+                    <td>@c.Descripcion</td>
+                    <td>@c.Direccion</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private CanchaDTOs nuevaCancha = new CanchaDTOs();
+    private List<CanchaItem>? listaCanchas;
+    private string? mensaje;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarCanchas();
+    }
+
+    private async Task CargarCanchas()
+    {
+        try
+        {
+            listaCanchas = await Http.GetFromJsonAsync<List<CanchaItem>>("api/Cancha");
+        }
+        catch (Exception ex)
+        {
+            mensaje = $"Error al cargar canchas: {ex.Message}";
+        }
+    }
+
+    private async Task RegistrarCancha()
+    {
+        try
+        {
+            var respuesta = await Http.PostAsJsonAsync("api/Cancha", nuevaCancha);
+            if (respuesta.IsSuccessStatusCode)
+            {
+                mensaje = "Cancha registrada correctamente.";
+                nuevaCancha = new CanchaDTOs();
+                await CargarCanchas();
+            }
+            else
+            {
+                mensaje = await respuesta.Content.ReadAsStringAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            mensaje = $"Error al registrar: {ex.Message}";
+        }
+    }
+
+    public class CanchaItem
+    {
+        public Guid Id { get; set; }
+        public string Descripcion { get; set; } = string.Empty;
+        public string Direccion { get; set; } = string.Empty;
+    }
+}

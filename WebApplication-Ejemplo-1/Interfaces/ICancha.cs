@@ -1,4 +1,4 @@
-﻿using WebApplication_Ejemplo_1.DTOs;
+using Contrato;
 using WebApplication_Ejemplo_1.Models;
 
 namespace WebApplication_Ejemplo_1.Interfaces

@@ -1,4 +1,4 @@
-namespace WebApplication_Ejemplo_1.DTOs
+namespace Contrato
 {
     public class ClienteDTOs
     {
