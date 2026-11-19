@@ -65,6 +65,29 @@ namespace WebApplication_Ejemplo_1.Migrations
                     b.ToTable("clientes");
                 });
 
+            modelBuilder.Entity("WebApplication_Ejemplo_1.Models.Usuario", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("NombreUsuario")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Rol")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Usuarios");
+                });
+
             modelBuilder.Entity("WebApplication_Ejemplo_1.Models.reseva", b =>
                 {
                     b.Property<Guid>("id")

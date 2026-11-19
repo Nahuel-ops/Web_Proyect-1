@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using Contrato;
@@ -32,23 +33,53 @@ namespace WebRazorCanchas.Pages.Canchas
         public int TotalRegistros { get; set; } = 0;
         private const int RegistrosPorPagina = 5;
 
-        public async Task OnGetAsync(int pagina = 1)
+        private HttpClient? CrearClienteAutenticado()
         {
-            await CargarCanchas(pagina);
+            var token = HttpContext.Session.GetString("JwtToken");
+            if (string.IsNullOrEmpty(token))
+            {
+                return null;
+            }
+
+            var client = _httpClientFactory.CreateClient("Api");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            return client;
+        }
+
+        public async Task<IActionResult> OnGetAsync(int pagina = 1)
+        {
+            var client = CrearClienteAutenticado();
+            if (client == null)
+            {
+                return RedirectToPage("/Auth/Login");
+            }
+
+            var autorizado = await CargarCanchas(client, pagina);
+            if (!autorizado)
+            {
+                HttpContext.Session.Clear();
+                return RedirectToPage("/Auth/Login");
+            }
+
+            return Page();
         }
 
         public async Task<IActionResult> OnPostAsync()
         {
+            var client = CrearClienteAutenticado();
+            if (client == null)
+            {
+                return RedirectToPage("/Auth/Login");
+            }
+
             if (!ModelState.IsValid)
             {
-                await CargarCanchas(1);
+                await CargarCanchas(client, 1);
                 return Page();
             }
 
             try
             {
-                var client = _httpClientFactory.CreateClient("Api");
-
                 if (ArchivoImagen != null && ArchivoImagen.Length > 0)
                 {
                     using var content = new MultipartFormDataContent();
@@ -58,6 +89,12 @@ namespace WebRazorCanchas.Pages.Canchas
                     content.Add(fileContent, "archivo", ArchivoImagen.FileName);
 
                     var respImagen = await client.PostAsync("api/Cancha/subir-imagen", content);
+                    if (respImagen.StatusCode == HttpStatusCode.Unauthorized)
+                    {
+                        HttpContext.Session.Clear();
+                        return RedirectToPage("/Auth/Login");
+                    }
+
                     if (respImagen.IsSuccessStatusCode)
                     {
                         var json = await respImagen.Content.ReadAsStringAsync();
@@ -72,6 +109,12 @@ namespace WebRazorCanchas.Pages.Canchas
                 }
 
                 var respuesta = await client.PostAsJsonAsync("api/Cancha", NuevaCancha);
+
+                if (respuesta.StatusCode == HttpStatusCode.Unauthorized)
+                {
+                    HttpContext.Session.Clear();
+                    return RedirectToPage("/Auth/Login");
+                }
 
                 if (respuesta.IsSuccessStatusCode)
                 {
@@ -90,12 +133,19 @@ namespace WebRazorCanchas.Pages.Canchas
             return RedirectToPage();
         }
 
-        private async Task CargarCanchas(int pagina)
+        private async Task<bool> CargarCanchas(HttpClient client, int pagina)
         {
             try
             {
-                var client = _httpClientFactory.CreateClient("Api");
-                var resultado = await client.GetFromJsonAsync<List<CanchaItem>>("api/Cancha");
+                var response = await client.GetAsync("api/Cancha");
+                if (response.StatusCode == HttpStatusCode.Unauthorized)
+                {
+                    return false;
+                }
+
+                response.EnsureSuccessStatusCode();
+                var resultado = await response.Content.ReadFromJsonAsync<List<CanchaItem>>();
+
                 if (resultado != null)
                 {
                     TotalRegistros = resultado.Count;
@@ -114,6 +164,8 @@ namespace WebRazorCanchas.Pages.Canchas
             {
                 Mensaje = $"Error al cargar canchas: {ex.Message}";
             }
+
+            return true;
         }
 
         public class CanchaItem

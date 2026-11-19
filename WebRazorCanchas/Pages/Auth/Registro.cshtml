@@ -1,0 +1,48 @@
+@page
+@model WebRazorCanchas.Pages.Auth.RegistroModel
+@{
+    ViewData["Title"] = "Crear Cuenta";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card shadow border-0 rounded-4 overflow-hidden">
+                <div class="card-header bg-danger text-white text-center py-4">
+                    <h3 class="mb-0 fw-bold">Registro de Usuario</h3>
+                    <small class="opacity-75">Crea una cuenta para acceder a la gestión de canchas</small>
+                </div>
+                <div class="card-body p-4">
+                    @if (!string.IsNullOrEmpty(Model.MensajeError))
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            @Model.MensajeError
+                        </div>
+                    }
+
+                    <form method="post">
+                        <div class="mb-3">
+                            <label asp-for="NuevoUsuario.NombreUsuario" class="form-label fw-semibold">Nombre de Usuario</label>
+                            <input asp-for="NuevoUsuario.NombreUsuario" class="form-control form-control-lg" placeholder="Elige un usuario" required />
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="NuevoUsuario.Password" class="form-label fw-semibold">Contraseña</label>
+                            <input asp-for="NuevoUsuario.Password" type="password" class="form-control form-control-lg" placeholder="Crea una contraseña segura" required />
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-danger btn-lg fw-bold">
+                                Registrarme
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer bg-light text-center py-3">
+                    <span class="text-muted">¿Ya tienes una cuenta?</span>
+                    <a asp-page="/Auth/Login" class="text-danger fw-bold text-decoration-none ms-1">Inicia sesión</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

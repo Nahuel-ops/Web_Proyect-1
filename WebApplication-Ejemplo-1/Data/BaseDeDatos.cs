@@ -12,5 +12,9 @@ namespace WebApplication_Ejemplo_1.Data
        public DbSet<Cancha> canchas { get; set; }
        public DbSet<Cliente> clientes { get; set; }
        public DbSet<reseva> resevas { get; set; }
+
+        //agregamos usuarios para el tockens
+        public DbSet<Usuario> Usuarios { get; set; }
+
     }
 }

@@ -1,8 +1,12 @@
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using WebApplication_Ejemplo_1.Data;
+using WebApplication_Ejemplo_1.Factories;
 using WebApplication_Ejemplo_1.Interfaces;
 using WebApplication_Ejemplo_1.Services;
-using WebApplication_Ejemplo_1.Factories;
 
 namespace WebApplication_Ejemplo_1
 {
@@ -35,9 +39,60 @@ namespace WebApplication_Ejemplo_1
             builder.Services.AddScoped<ICancha, CanchaServices>();
             builder.Services.AddScoped<ICliente, ClienteServices>();
             builder.Services.AddScoped<IReserva, ReservaServices>();
+            builder.Services.AddScoped<IAuthInterface, AuthServices>();
+
+            // Configuración de Autenticación JWT
+            var jwtKey = builder.Configuration["Jwt:Key"]!;
+            var jwtIssuer = builder.Configuration["Jwt:Issuer"];
+            var jwtAudience = builder.Configuration["Jwt:Audience"];
+
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = jwtIssuer,
+                        ValidAudience = jwtAudience,
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+                    };
+                });
 
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+
+            // Configuración de Swagger con soporte para Token JWT (Botón Authorize)
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "WebApplication-Ejemplo-1", Version = "v1" });
+
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
+                    Description = "Ingresa tu token JWT aquí (sin escribir 'Bearer')."
+                });
+
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        Array.Empty<string>()
+                    }
+                });
+            });
 
             var app = builder.Build();
 
@@ -71,11 +126,13 @@ namespace WebApplication_Ejemplo_1
 
             app.UseHttpsRedirection();
 
-            //activamos 
+            // Activamos archivos estáticos
             app.UseStaticFiles();
 
             app.UseCors("PermitirBlazor");
 
+            // ¡Orden obligatorio: primero Authentication y luego Authorization!
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllers();

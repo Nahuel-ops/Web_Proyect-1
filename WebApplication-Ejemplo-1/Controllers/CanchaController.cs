@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,15 +11,15 @@ namespace WebApplication_Ejemplo_1.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    
+    [Authorize]
     public class CanchaController : ControllerBase
-    {   
+    {
         //El anterior codigo lo borramos
         //Desde esta parte estamos dando el contro a services y quitando el trabajo a...
         private readonly ICancha _canchaService;
 
-        public CanchaController(ICancha canchaService) 
-        { 
+        public CanchaController(ICancha canchaService)
+        {
             _canchaService = canchaService;
         }
         [HttpGet]
@@ -71,9 +72,5 @@ namespace WebApplication_Ejemplo_1.Controllers
             string urlPublica = $"{Request.Scheme}://{Request.Host}/imagenes/{nombreUnico}";
             return Ok(new { url = urlPublica });
         }
-
-
-
     }
-
 }

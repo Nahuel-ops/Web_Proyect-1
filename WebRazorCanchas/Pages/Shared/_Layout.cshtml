@@ -1,11 +1,15 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
+@{
+    var usuarioNombre = HttpContextAccessor.HttpContext?.Session.GetString("UsuarioNombre");
+}
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - ArenaSport</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="https://jsdelivr.net">
     <link rel="stylesheet" href="https://jsdelivr.net" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
@@ -22,13 +26,36 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-end">
-                    <ul class="navbar-nav gap-2">
+                    <ul class="navbar-nav align-items-center gap-2">
                         <li class="nav-item">
                             <a class="nav-link px-3 rounded-pill fw-medium text-white" asp-area="" asp-page="/Index">Inicio</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link px-3 rounded-pill fw-medium text-white bg-white bg-opacity-10" asp-area="" asp-page="/Canchas/Index">Canchas</a>
                         </li>
+
+                        @if (!string.IsNullOrEmpty(usuarioNombre))
+                        {
+                            <li class="nav-item ms-sm-2">
+                                <span class="nav-link text-white fw-semibold">
+                                    <i class="bi bi-person-circle me-1"></i> @usuarioNombre
+                                </span>
+                            </li>
+                            <li class="nav-item">
+                                <a class="btn btn-light text-danger btn-sm rounded-pill px-3 fw-bold shadow-sm" asp-area="" asp-page="/Auth/Logout">
+                                    Cerrar Sesión
+                                </a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item ms-sm-2">
+                                <a class="nav-link px-3 rounded-pill fw-medium text-white" asp-area="" asp-page="/Auth/Login">Iniciar Sesión</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="btn btn-light text-danger btn-sm rounded-pill px-3 fw-bold shadow-sm" asp-area="" asp-page="/Auth/Registro">Registrarse</a>
+                            </li>
+                        }
                     </ul>
                 </div>
             </div>
@@ -50,7 +77,6 @@
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://jsdelivr.net"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
 
     @await RenderSectionAsync("Scripts", required: false)
